@@ -9,7 +9,7 @@ class Dispenser
 public:
     Dispenser();
     void pourDrink(int drink);
-    void setCoords(float, float);
+    void setCoords(float _x, float _y) {x = _x; y = _y;}
     std::pair<float, float> getCoords();
     void setDrink(int _drink) {drink = _drink;}
     int getDrink() {return drink;}

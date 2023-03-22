@@ -1,17 +1,17 @@
 #include "Robot.h"
-#include <bits/stdc++.h>
+using namespace std;
 
 Robot::Robot()
 {
     printf("\nСоздан объект робота");
 }
 
-void Robot::turn(std::pair<float, float> destination)
+void Robot::turn(pair<float, float> destination)
 {
     printf("\nРобот повернулся");
 }
 
-void Robot::go(std::pair<float, float> destination)
+void Robot::go(pair<float, float> destination)
 {
     printf("\nРобот поехал");
 }

@@ -1,37 +1,47 @@
 #include "System.h"
-#include <bits/stdc++.h>
+#include <memory>
+#include <cmath>
+using namespace std;
 
 System::System()
 {
     eState = eWork;
-    robot = new Robot();
-    dispenser = new Dispenser();
-}
-
-System::~System()
-{
-    delete robot;
-    delete dispenser;
+    robot = make_unique<Robot>();
+    dispenser = make_unique<Dispenser>();
+    detector = make_unique<Detector<Strategy>>();
 }
 
 void System::processEvent()
 {
+    pair<float, float> coords;
+    tuple<float, float, float> robotCoords;
     switch(eState)
     {
         case eWork:
             getDrink();
-            getHumanCoords();
-            getRobotCoords();
-            getDispenserCoords();
+
+            coords = detector->getHumanCoords();
+            humanPos_x = coords.first;
+            humanPos_y = coords.second;
+
+            robotCoords = detector->getRobotCoords();
+            robot->setCoords(get<0>(robotCoords), get<1>(robotCoords), get<2>(robotCoords));
+
+            coords = detector->getDispenserCoords();
+            dispenser->setCoords(coords.first, coords.second);
+
             eState = eTravel;
             break;
         case eTravel:
-            getRobotCoords();
-            if(robotArrived(dispenser->getCoords()))
+            robotCoords = detector->getRobotCoords();
+            robot->setCoords(get<0>(robotCoords), get<1>(robotCoords), get<2>(robotCoords));
+
+            coords = dispenser->getCoords();
+            if(robotArrived(coords))
                 eState = ePour;
             else {
-                robot->turn(dispenser->getCoords());
-                robot->go(dispenser->getCoords());
+                robot->turn(coords);
+                robot->go(coords);
             }
             break;
         case ePour:
@@ -50,34 +60,13 @@ void System::processEvent()
     }
 }
 
-int System::getDrink()
+void System::getDrink()
 {
     int drink = 1;
     dispenser->setDrink(drink);
 }
 
-void System::getHumanCoords()
-{
-    humanPos_x = 0.0f;
-    humanPos_y = 0.0f;
-}
-
-void System::getRobotCoords()
-{
-    float x = 0.0f;
-    float y = 0.0f;
-    float angle = 0.0f;
-    robot->setCoords(x, y, angle);
-}
-
-void System::getDispenserCoords()
-{
-    float x = 0.0f;
-    float y = 0.0f;
-    dispenser->setCoords(x, y);
-}
-
-bool System::robotArrived(std::pair<float, float> dest, int accuracy)  // округление до <accuracy> знаков после запятой
+bool System::robotArrived(pair<float, float> dest, int accuracy)  // округление до <accuracy> знаков после запятой
 {
     accuracy = pow(10, accuracy);
     if(round(dest.first * accuracy) / accuracy == round(dest.first * accuracy) / accuracy &&
